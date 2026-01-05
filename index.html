@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Leak // Feed</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        sys: { 
+                            // Mapeando as variáveis do CSS
+                            bg: 'var(--bg-color)',
+                            card: 'var(--card-bg)',
+                            text: 'var(--text-color)',
+                            meta: 'var(--meta-color)',
+                            border: 'var(--border-color)',
+                            
+                            // Agora o verde e vermelho respeitam o tema (Escuro/Claro)
+                            red: 'var(--color-red)', 
+                            green: 'var(--color-green)' 
+                        }
+                    },
+                    fontFamily: { mono: ['Courier New', 'monospace'], sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="min-h-screen font-sans flex flex-col items-center crt overflow-x-hidden selection:bg-sys-red selection:text-white bg-sys-bg text-sys-text transition-colors duration-500">
+
+    <div class="w-full border-b border-sys-border bg-sys-bg/95 backdrop-blur fixed top-0 z-50 transition-colors duration-500">
+        <div class="max-w-3xl mx-auto px-6 py-4 flex justify-between items-center font-mono text-xs">
+            
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 bg-sys-green rounded-full shadow-lg"></span>
+                    <span class="text-sys-green tracking-widest hidden sm:inline font-bold">NET_ONLINE</span>
+                </div>
+                <div class="h-4 w-px bg-sys-border"></div>
+                <div class="text-sys-red animate-pulse tracking-widest">:: LIVE FEED ::</div>
+            </div>
+
+            <button id="theme-toggle" class="hover:text-sys-red transition-colors uppercase tracking-widest border border-sys-border px-3 py-1 rounded hover:border-sys-red text-sys-meta">
+                [ SWITCH_THEME ]
+            </button>
+        </div>
+    </div>
+
+    <div class="w-full max-w-2xl px-6 pt-32 pb-20 z-10">
+        
+        <header class="mb-20 text-center border-b border-sys-border pb-10">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 tracking-tight text-sys-text">System Logs</h1>
+            <p class="text-xs font-mono text-sys-meta uppercase tracking-[0.3em]">
+                > Intercepted Signals Archive <
+            </p>
+        </header>
+
+        <main id="public-feed" class="space-y-16">
+            <div class="text-center font-mono text-xs text-sys-meta mt-10">
+                decrypting database...
+            </div>
+        </main>
+
+        <footer class="mt-32 text-center border-t border-sys-border pt-8 mb-10">
+            <p class="text-[10px] font-mono text-sys-meta opacity-50">
+                SECURE CONNECTION // NODE_ID: 0X-F9 // END OF STREAM
+            </p>
+        </footer>
+    </div>
+
+    <script type="module" src="/assets/js/script.js"></script>
+</body>
+</html>

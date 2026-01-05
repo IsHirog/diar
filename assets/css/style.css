@@ -1,0 +1,144 @@
+/* =========================================
+   1. SISTEMA DE TEMAS & VARIÁVEIS
+   ========================================= */
+:root {
+    /* == MODO CLARO (Estilo "Relatório Oficial") == */
+    --bg-color: #f3f4f6;       /* Cinza gelo */
+    --card-bg: #ffffff;        /* Branco */
+    --text-color: #1f2937;     /* Cinza chumbo */
+    --meta-color: #6b7280;     /* Cinza médio */
+    --border-color: #d1d5db;   /* Cinza borda */
+    --input-bg: #e5e7eb;       /* Fundo de input leve */
+    
+    /* CORES DESTAQUE */
+    --color-green: #15803d;    /* Verde Floresta (Legível) */
+    --color-red: #b91c1c;      /* Vermelho Sangue */
+    
+    /* EFEITOS */
+    --scanline-opacity: 0.05;  /* Quase invisível no claro */
+}
+
+/* == MODO ESCURO (Estilo "Matrix/Cyberpunk") == */
+.dark {
+    --bg-color: #050505;       /* Preto */
+    --card-bg: #0a0a0a;        /* Preto leve */
+    --text-color: #a0a0a0;     /* Cinza terminal */
+    --meta-color: #555555;     /* Cinza escuro */
+    --border-color: #222222;   /* Borda sutil */
+    --input-bg: #111111;       /* Fundo de input escuro */
+    
+    /* CORES DESTAQUE NEON */
+    --color-green: #00ff41;    
+    --color-red: #ff3333;      
+
+    /* EFEITOS */
+    --scanline-opacity: 0.3;   /* Visível no escuro */
+}
+
+/* =========================================
+   2. CONFIGURAÇÕES GERAIS (BASE)
+   ========================================= */
+body { 
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
+    
+    /* Suavização de fonte */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Transição suave ao trocar de tema */
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Scrollbar Personalizada (Agora respeita o tema) */
+::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px;
+}
+::-webkit-scrollbar-track { 
+    background: var(--bg-color); 
+}
+::-webkit-scrollbar-thumb { 
+    background: var(--border-color); 
+    border-radius: 3px; 
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--meta-color);
+}
+
+/* =========================================
+   3. ELEMENTOS DE INTERFACE (ADMIN & GERAL)
+   ========================================= */
+textarea, input {
+    caret-color: var(--color-red); /* Cursor vermelho estilo terminal */
+    line-height: 1.8;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+/* Estilos das Abas (Admin) */
+.tab-active { 
+    color: var(--text-color); 
+    border-bottom: 2px solid var(--color-green); 
+}
+.tab-inactive { 
+    color: var(--meta-color); 
+    border-bottom: 2px solid transparent; 
+}
+.tab-inactive:hover {
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+/* Animação de Entrada (Fade In) */
+.fade-in { 
+    animation: fadeIn 0.3s ease-in-out; 
+}
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+/* =========================================
+   4. EFEITOS VISUAIS (CRT / SCANLINES)
+   ========================================= */
+.crt::before {
+    content: " ";
+    display: block; 
+    position: fixed; /* Fixado na tela para não quebrar ao rolar */
+    top: 0; left: 0; bottom: 0; right: 0;
+    
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    
+    z-index: 9999; 
+    pointer-events: none; 
+    
+    opacity: var(--scanline-opacity);
+    transition: opacity 0.5s ease;
+}
+
+/* =========================================
+   5. COMPONENTES DO BLOG (PÚBLICO)
+   ========================================= */
+.blog-card {
+    position: relative;
+    padding-left: 20px;
+    border-left: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.blog-card:hover {
+    border-left: 3px solid var(--color-red);
+    padding-left: 25px;
+    background: linear-gradient(90deg, var(--bg-color) 0%, transparent 100%);
+}
+
+.prose p {
+    line-height: 1.8;
+    font-weight: 300;
+}

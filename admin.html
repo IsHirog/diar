@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diar // OS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: { colors: { dark: { 500: '#111111', 600: '#0a0a0a', 700: '#050505', border: '#333333' } } }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="bg-dark-500 text-gray-200 min-h-screen font-sans flex flex-col items-center">
+
+    <div class="w-full max-w-3xl px-4 py-6 flex-1 flex flex-col">
+        <header class="flex justify-between items-end mb-8 border-b border-gray-800 pb-0">
+            <div class="flex space-x-6">
+                <button id="tab-write" class="pb-3 text-sm font-mono uppercase tracking-wide transition-all tab-active">:: Input</button>
+                <button id="tab-read" class="pb-3 text-sm font-mono uppercase tracking-wide transition-all tab-inactive">:: Memory</button>
+            </div>
+            <div class="pb-3 text-xs text-gray-600 font-mono" id="status-indicator">system ready</div>
+        </header>
+
+        <main id="view-write" class="flex-1 flex flex-col relative">
+            <form id="entry-form" class="flex-1 flex flex-col">
+                <div class="mb-4 flex items-center justify-between text-xs text-gray-500 font-mono">
+                    <div class="flex items-center">
+                        <label class="relative inline-flex items-center cursor-pointer mr-4">
+                            <input type="checkbox" id="review-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 transition-colors duration-300"></div>
+                            <span class="ml-3 font-mono text-gray-400 peer-checked:text-green-400 transition-colors">REVIEW MODE</span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <div id="timestamp">--:--</div>
+                        <div class="w-px h-3 bg-gray-700"></div>
+                        <label class="cursor-pointer flex items-center hover:text-gray-300">
+                            <input type="checkbox" id="tags-toggle" class="mr-1 accent-gray-500"> tags
+                        </label>
+                    </div>
+                </div>
+
+                <div id="metadata-fields" class="hidden mb-4">
+                    <input type="text" id="tags-input" placeholder="tags (space separated)" class="w-full bg-dark-600 border-b border-gray-800 px-2 py-1 text-sm focus:outline-none text-gray-400 placeholder-gray-700">
+                </div>
+
+                <textarea id="entry-content" autofocus class="w-full flex-1 bg-dark-500 text-gray-300 text-lg leading-relaxed focus:outline-none resize-none mb-4 placeholder-gray-800" placeholder="Dump cache here..."></textarea>
+                
+                <div class="flex justify-end">
+                    <button type="submit" id="send-button" class="bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white px-6 py-2 rounded text-xs uppercase tracking-widest transition-colors border border-gray-700">
+                        Commit
+                    </button>
+                </div>
+            </form>
+
+            <div id="preview-panel" class="hidden absolute inset-0 bg-dark-500 z-10 flex flex-col fade-in">
+                <div class="flex-1 flex flex-col justify-center px-4">
+                    <h3 class="text-green-500 font-mono text-xs uppercase mb-4 tracking-widest border-b border-green-900/30 pb-2">
+                        :: Signal Preview (Diar AI) ::
+                    </h3>
+                    
+                    <div id="preview-text" class="text-gray-300 text-lg font-light leading-relaxed italic border-l-2 border-green-500/50 pl-4 py-2">
+                        Generating preview...
+                    </div>
+                    
+                    <div class="mt-8 flex justify-end space-x-3 font-mono text-xs">
+                        <button id="btn-cancel" class="px-4 py-2 text-red-400 hover:bg-red-900/20 rounded transition-colors border border-red-500/30 hover:border-red-400">
+                            [ CANCEL ]
+                        </button>
+                        <button id="btn-refresh" class="px-4 py-2 text-blue-400 hover:bg-blue-900/20 rounded transition-colors border border-blue-900/30">
+                            [ REFRESH ]
+                        </button>
+                        <button id="btn-confirm" class="px-6 py-2 bg-green-900/20 text-green-400 hover:bg-green-900/40 rounded transition-colors border border-green-500/50 hover:border-green-400">
+                            [ CONFIRM ]
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <main id="view-read" class="hidden pb-20">
+            <div id="feed" class="space-y-8"></div>
+        </main>
+    </div>
+
+    <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>
