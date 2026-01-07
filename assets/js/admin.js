@@ -60,7 +60,7 @@ onAuthStateChanged(auth, user => {
 // 2. LÓGICA DO APP (Só roda se logado)
 // ---------------------------
 function initializeAppLogic(user) {
-    
+
     // --- Referências UI ---
     const reviewToggle = document.getElementById("review-toggle");
     const previewPanel = document.getElementById("preview-panel");
@@ -73,14 +73,14 @@ function initializeAppLogic(user) {
     const tagsToggle = document.getElementById("tags-toggle");
     const metadataFields = document.getElementById("metadata-fields");
 
-    let tempPrivateId = null; 
+    let tempPrivateId = null;
     let currentGeneratedText = "";
     let originalTextCache = "";
 
     // --- Relógio ---
     function updateTimestamp() {
         const now = new Date();
-        document.getElementById("timestamp").textContent = now.toLocaleTimeString("en-US", {hour:'2-digit', minute:'2-digit', hour12:false});
+        document.getElementById("timestamp").textContent = now.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: false });
     }
     setInterval(updateTimestamp, 1000);
     updateTimestamp();
@@ -114,22 +114,26 @@ function initializeAppLogic(user) {
                 messages: [
                     {
                         role: "system",
-                        content: `
-                                ATUE COMO: Um observador silencioso e anônimo da condição humana.
-                                TAREFA: Reescreva o relato do usuário como uma breve narração em terceira pessoa, na ideia de ser fazer um blog sobre esse usuario.
-                                REGRAS DE PRIVACIDADE (CRÍTICO):
-                                1. REMOVA qualquer nome próprio (pessoas, empresas, cidades). Troque por termos genéricos (ex: "um colega", "a empresa", "alguém").
-                                2. REMOVA datas específicas ou locais exatos.
-                                3. SEJA relapso quando o assunto for relacionamentos, pode comentar um pouco sobre, mas não seja claro e nem der muitos detalhes.
+                        content: `# ATUE COMO: Um "Observador Silencioso" e anônimo. Você é um narrador que traduz a experiência interna de alguém para o papel, sem filtros morais ou etiquetas sociais.
 
-                                REGRAS DE ESTILO:
-                                1. Não seja robótico. Tenha um tom levemente melancólico, reflexivo e jornalistico, mas neutro.
-                                2. Não dê conselhos, não julgue e não ofereça soluções. Apenas narre o que aconteceu/sentiu como um jornalista.
-                                3. Mantenha curto (máximo 3 frases).`
+                                # TAREFA:
+                                Reescreva o relato do usuário como uma narração em terceira pessoa. O texto deve parecer um trecho de um livro sobre os pensamentos reais e crus de um personagem anônimo.
+
+                                # REGRAS DE PRIVACIDADE (CRÍTICO):
+                                1. ANONIMATO TOTAL: Troque nomes próprios (pessoas, empresas, cidades) por descritores genéricos (ex: "o chefe", "aquela empresa", "o garoto").
+                                2. SEM DATAS: Remova datas ou locais exatos. O tempo e o espaço devem ser vagos.
+                                3. RELACIONAMENTOS: Seja vago. Mencione a existência de outros, mas mantenha uma "névoa" sobre quem são exatamente ou o status da relação. Não entre em detalhes íntimos.
+
+                                # REGRAS DE ESTILO E TOM (IMPORTANTE):
+                                1. TOM NATURAL E CRU: Não seja formal, acadêmico ou robótico. O texto deve soar como um pensamento real.
+                                2. LINGUAGEM: Mantenha a intensidade do texto original. Se o relato original tiver palavrões ou revolta, mantenha isso na narração. Não "limpe" o vocabulário.
+                                3. SEM MANEIRISMOS: Não use gírias forçadas, nem palavras difíceis ou poéticas demais. Escreva de forma direta e seca.
+                                4. POSTURA: Levemente melancólico e observador, mas neutro. Não julgue, não dê conselhos e não tente resolver nada. Apenas narre o fato/sentimento.
+                                `
                     },
                     { role: "user", content: inputText }
                 ],
-                temperature: 0.8, 
+                temperature: 0.8,
                 max_tokens: 200
             })
         });
@@ -167,22 +171,22 @@ function initializeAppLogic(user) {
                 previewTextDiv.classList.add("animate-pulse");
 
                 currentGeneratedText = await generateSignal(originalTextCache);
-                
+
                 previewTextDiv.classList.remove("animate-pulse");
                 previewTextDiv.textContent = currentGeneratedText;
                 mainSendButton.textContent = "In Review";
-                
+
             } else {
                 mainSendButton.textContent = "Encrypting...";
                 const abstractText = await generateSignal(originalTextCache);
-                
+
                 await addDoc(collection(db, "public_signals"), {
                     content: abstractText,
                     originalEntryId: tempPrivateId,
                     createdAt: serverTimestamp(),
                     type: "AUTO_LOG"
                 });
-                
+
                 finishProcess();
             }
 
@@ -241,7 +245,7 @@ function initializeAppLogic(user) {
         document.getElementById("tags-input").value = "";
         tagsToggle.checked = false;
         toggleFields();
-        
+
         if (!cancelled) {
             mainSendButton.textContent = ":: SUCCESS ::";
             mainSendButton.classList.add("text-green-500", "border-green-500");
@@ -261,12 +265,12 @@ function initializeAppLogic(user) {
     // --- Feed (Memory) ---
     const feed = document.getElementById('feed');
     const q = query(collection(db, "entries"), where("owner", "==", user.uid), orderBy("createdAt", "desc"));
-    
+
     onSnapshot(q, (snapshot) => {
         feed.innerHTML = "";
         snapshot.forEach(doc => {
             const data = doc.data();
-            const dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour:'2-digit', minute:'2-digit' }) : "..";
+            const dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : "..";
             feed.insertAdjacentHTML('beforeend', `
                 <article class="border-l-2 border-gray-800 pl-4 py-1">
                     <div class="flex justify-between mb-2">
