@@ -123,6 +123,7 @@ function initializeAppLogic(user) {
                                 1. ANONIMATO TOTAL: Troque nomes próprios (pessoas, empresas, cidades) por descritores genéricos (ex: "o chefe", "aquela empresa", "o garoto").
                                 2. SEM DATAS: Remova datas ou locais exatos. O tempo e o espaço devem ser vagos.
                                 3. RELACIONAMENTOS: Seja vago. Mencione a existência de outros, mas mantenha uma "névoa" sobre quem são exatamente ou o status da relação. Não entre em detalhes íntimos.
+                                4. CONSUMO: Deixe de fora coisas ilícitas (ex: drogas)
 
                                 # REGRAS DE ESTILO E TOM (IMPORTANTE):
                                 1. TOM NATURAL E CRU: Não seja formal, acadêmico ou robótico. O texto deve soar como um pensamento real.
