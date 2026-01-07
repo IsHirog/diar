@@ -129,6 +129,7 @@ function initializeAppLogic(user) {
                                 2. LINGUAGEM: Mantenha a intensidade do texto original. Se o relato original tiver palavrões ou revolta, mantenha isso na narração. Não "limpe" o vocabulário.
                                 3. SEM MANEIRISMOS: Não use gírias forçadas, nem palavras difíceis ou poéticas demais. Escreva de forma direta e seca.
                                 4. POSTURA: Levemente melancólico e observador, mas neutro. Não julgue, não dê conselhos e não tente resolver nada. Apenas narre o fato/sentimento.
+                                5. Mantenha curto (máximo 3 frases)
                                 `
                     },
                     { role: "user", content: inputText }
