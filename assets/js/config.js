@@ -16,4 +16,4 @@ export const ALLOWED_EMAIL = "chritiangabriel3d@gmail.com";
 
 // URL do seu deploy no Vercel (preenche depois do deploy)
 // Ex: "https://diar.vercel.app"
-export const VERCEL_URL = "https://SEU-PROJETO.vercel.app";
+export const VERCEL_URL = "https://diar-sm3t.vercel.app";
