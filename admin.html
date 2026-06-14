@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIAR // OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0d0d0d;
+      --surface:  #141414;
+      --surface2: #1a1a1a;
+      --border:   #262626;
+      --border2:  #333333;
+      --red:      #e84040;
+      --red-dim:  #3d1515;
+      --green:    #3ddc84;
+      --green-dim:#0f2e1c;
+      --amber:    #f0a500;
+      --text:     #e0e0e0;
+      --text2:    #999999;
+      --text3:    #555555;
+      --mono:     'IBM Plex Mono', monospace;
+      --sans:     'IBM Plex Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ══ LOGIN ══════════════════════════════════════════════ */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 2rem;
+    }
+    .login-logo {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: var(--text);
+    }
+    .login-logo span { color: var(--red); }
+    .login-sub {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text3);
+      letter-spacing: 0.3em;
+    }
+    #login-error {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--red);
+      letter-spacing: 0.05em;
+      display: none;
+    }
+
+    /* ══ APP SHELL ══════════════════════════════════════════ */
+    #app {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══ TOPBAR ═════════════════════════════════════════════ */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      height: 48px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .topbar-logo {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--text);
+    }
+    .topbar-logo span { color: var(--red); }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .topbar-email {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text3);
+    }
+
+    /* ══ TABS ═══════════════════════════════════════════════ */
+    .tabbar {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.25rem;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--text3);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover  { color: var(--text2); }
+    .tab-btn.active { color: var(--text);  border-bottom-color: var(--red); }
+
+    /* ══ TAB PANELS ═════════════════════════════════════════ */
+    .tab-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .tab-panel.active { display: flex; }
+
+    /* ══ EDITOR ═════════════════════════════════════════════ */
+    .editor-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Toolbar de formatação */
+    .format-bar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0.4rem 1rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .fmt-btn {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text3);
+      background: none;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: color 0.12s, background 0.12s;
+      line-height: 1;
+    }
+    .fmt-btn:hover { color: var(--text); background: var(--surface2); }
+    .fmt-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--border2);
+      margin: 0 4px;
+    }
+
+    /* Editor contenteditable */
+    #editor-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      outline: none;
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      line-height: 1.9;
+      color: var(--text);
+      caret-color: var(--red);
+    }
+    #editor-area:empty::before {
+      content: attr(data-placeholder);
+      color: var(--text3);
+      pointer-events: none;
+    }
+    #editor-area b, #editor-area strong { color: var(--text); font-weight: 600; }
+    #editor-area i, #editor-area em     { color: var(--text2); font-style: italic; }
+    #editor-area ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+    #editor-area ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+    #editor-area li { margin-bottom: 0.25rem; }
+    #editor-area h2 {
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1rem 0 0.25rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tags + footer */
+    .editor-meta {
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .tags-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      gap: 0.5rem;
+      border-right: 1px solid var(--border);
+    }
+    .tags-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text3);
+      letter-spacing: 0.15em;
+      flex-shrink: 0;
+    }
+    #tags-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text2);
+      padding: 0.65rem 0;
+    }
+    #tags-input::placeholder { color: var(--text3); }
+
+    .editor-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      flex-shrink: 0;
+    }
+    .timestamp {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text3);
+      letter-spacing: 0.1em;
+      margin-right: auto;
+      padding-left: 1.25rem;
+    }
+
+    /* ══ BUTTONS ════════════════════════════════════════════ */
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      padding: 0.45rem 1rem;
+      border: 1px solid;
+      cursor: pointer;
+      background: none;
+      border-radius: 3px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-ghost  { border-color: var(--border2); color: var(--text3); }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--text3); color: var(--text2); }
+    .btn-danger { border-color: var(--red);   color: var(--red); }
+    .btn-danger:hover:not(:disabled) { background: var(--red-dim); }
+    .btn-primary { border-color: var(--green); color: var(--green); }
+    .btn-primary:hover:not(:disabled) { background: var(--green-dim); }
+
+    /* ══ REFINE PANEL ═══════════════════════════════════════ */
+    #refine-panel {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      inset: 48px 0 0 0; /* abaixo do topbar */
+      background: var(--surface);
+      z-index: 10;
+      border-top: 2px solid var(--green);
+    }
+    #refine-panel.visible { display: flex; }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--green);
+    }
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      line-height: 1.9;
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+    .panel-footer {
+      border-top: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    /* ══ COMMIT PREVIEW ═════════════════════════════════════ */
+    #commit-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13,13,13,0.97);
+      z-index: 50;
+      flex-direction: column;
+    }
+    #commit-panel.visible { display: flex; }
+
+    .commit-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .commit-title {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: var(--text2);
+    }
+
+    .commit-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex: 1;
+      overflow: hidden;
+      gap: 0;
+    }
+    .commit-col {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+    .commit-col:last-child { border-right: none; }
+    .commit-col-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      padding: 0.6rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .label-private { color: var(--text3); }
+    .label-public  { color: var(--green); }
+    .commit-col-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      line-height: 1.85;
+      white-space: pre-wrap;
+    }
+    .col-private { color: var(--text3); }
+    .col-public  { color: var(--text);  }
+
+    .commit-footer {
+      border-top: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    /* ══ MEMORY ══════════════════════════════════════════════ */
+    #tab-memory { overflow-y: auto; }
+    .memory-inner { padding: 1.5rem 2rem; max-width: 760px; margin: 0 auto; }
+
+    .post-card {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .post-card:hover { border-color: var(--border2); }
+
+    .post-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .post-toggle {
+      display: flex;
+      gap: 0;
+    }
+    .post-view-btn {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      padding: 0.2rem 0.6rem;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .post-view-btn:first-child { border-radius: 3px 0 0 3px; }
+    .post-view-btn:last-child  { border-radius: 0 3px 3px 0; margin-left: -1px; }
+    .post-view-btn.active { background: var(--surface2); color: var(--text); border-color: var(--text3); }
+
+    .post-meta {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text3);
+      letter-spacing: 0.1em;
+    }
+    .post-del-btn {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+    }
+    .post-del-btn:hover { color: var(--red); }
+
+    .post-body-wrap { padding: 1rem 1.25rem; }
+    .post-body {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+    .post-body.is-public { color: var(--text2); font-style: italic; }
+    .post-tags {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green);
+      margin-top: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ══ LOADING ════════════════════════════════════════════ */
+    .loading-text {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--green);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ══ TOAST ══════════════════════════════════════════════ */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 0.55rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-left: 3px solid var(--green);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text2);
+      letter-spacing: 0.08em;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      z-index: 200;
+      border-radius: 2px;
+    }
+    #toast.error { border-left-color: var(--red); }
+    #toast.show  { opacity: 1; }
+
+    /* ══ SCROLLBAR ══════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN ════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-logo">DIAR <span>//</span> OS</div>
+  <div class="login-sub">ACESSO RESTRITO</div>
+  <button class="btn btn-danger" id="btn-login">[ AUTENTICAR ]</button>
+  <div id="login-error"></div>
+</div>
+
+<!-- ══ APP ══════════════════════════════════════════════════ -->
+<div id="app" style="position:relative;">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">DIAR <span>//</span> OS</div>
+    <div class="topbar-right">
+      <span class="topbar-email" id="user-email"></span>
+      <button class="btn btn-ghost" id="btn-logout">sair</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabbar">
+    <button class="tab-btn active" data-tab="write">INPUT</button>
+    <button class="tab-btn"        data-tab="memory">MEMORY</button>
+  </div>
+
+  <!-- ── TAB: WRITE ───────────────────────────────────────── -->
+  <div class="tab-panel active" id="tab-write">
+    <div class="editor-wrap">
+
+      <!-- Barra de formatação -->
+      <div class="format-bar">
+        <button class="fmt-btn" data-cmd="bold"        title="Negrito (⌘B)"><b>B</b></button>
+        <button class="fmt-btn" data-cmd="italic"      title="Itálico (⌘I)"><i>I</i></button>
+        <div class="fmt-sep"></div>
+        <button class="fmt-btn" data-cmd="insertUnorderedList" title="Lista">• lista</button>
+        <button class="fmt-btn" data-cmd="insertOrderedList"   title="Lista numerada">1. lista</button>
+        <div class="fmt-sep"></div>
+        <button class="fmt-btn" data-cmd="h2"          title="Título">H2</button>
+        <div class="fmt-sep"></div>
+        <button class="fmt-btn" data-cmd="removeFormat" title="Limpar formatação">limpar</button>
+      </div>
+
+      <!-- Editor -->
+      <div
+        id="editor-area"
+        contenteditable="true"
+        spellcheck="true"
+        data-placeholder="// transmitindo..."></div>
+
+      <!-- Meta: tags + timestamp + ações -->
+      <div class="editor-meta">
+        <div class="tags-wrap">
+          <span class="tags-label">TAGS</span>
+          <input id="tags-input" type="text" placeholder="separadas por vírgula" />
+        </div>
+      </div>
+      <div class="editor-actions">
+        <span class="timestamp" id="timestamp"></span>
+        <button class="btn btn-ghost"   id="btn-ai">refinar com IA</button>
+        <button class="btn btn-primary" id="btn-commit">commit →</button>
+      </div>
+    </div>
+
+    <!-- ── REFINE PANEL ────────────────────────────────────── -->
+    <div id="refine-panel">
+      <div class="panel-header">
+        <span class="panel-title">IA // REFINAMENTO</span>
+        <span class="loading-text" id="refine-loading" style="display:none;">PROCESSANDO...</span>
+      </div>
+      <div class="panel-body" id="refine-text"></div>
+      <div class="panel-footer">
+        <button class="btn btn-ghost"   id="btn-refine-cancel">cancelar</button>
+        <button class="btn btn-ghost"   id="btn-refine-regen">regenerar</button>
+        <button class="btn btn-primary" id="btn-refine-accept">aceitar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: MEMORY ──────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-memory">
+    <div class="memory-inner" id="memory-inner">
+      <p style="font-family:var(--mono);font-size:0.75rem;color:var(--text3);">carregando...</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ COMMIT PREVIEW ═══════════════════════════════════════ -->
+<div id="commit-panel">
+  <div class="commit-header">
+    <span class="commit-title">PREVIEW // PUBLICAÇÃO</span>
+    <span class="loading-text" id="commit-loading" style="display:none;">FILTRANDO...</span>
+  </div>
+  <div class="commit-cols">
+    <div class="commit-col">
+      <div class="commit-col-label label-private">// PRIVADO — o que você escreveu</div>
+      <div class="commit-col-body col-private" id="preview-private"></div>
+    </div>
+    <div class="commit-col">
+      <div class="commit-col-label label-public">// PÚBLICO — versão filtrada pela IA</div>
+      <div class="commit-col-body col-public" id="preview-public"></div>
+    </div>
+  </div>
+  <div class="commit-footer">
+    <div style="display:flex;gap:0.5rem;">
+      <button class="btn btn-ghost"   id="btn-preview-cancel">cancelar</button>
+      <button class="btn btn-ghost"   id="btn-preview-regen">regenerar</button>
+    </div>
+    <button class="btn btn-primary" id="btn-preview-publish" disabled>publicar →</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ══ SCRIPT ═══════════════════════════════════════════════ -->
+<script type="module">
+import { ALLOWED_EMAIL } from "./assets/js/config.js";
+import { onAuth, login, logout, savePost, fetchPosts, deletePost } from "./assets/js/firebase.js";
+import { refineText, filterText } from "./assets/js/gemini.js";
+
+// ── Elements ─────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const loginScreen   = $("login-screen");
+const loginError    = $("login-error");
+const app           = $("app");
+const userEmail     = $("user-email");
+const editor        = $("editor-area");
+const tagsInput     = $("tags-input");
+const timestamp     = $("timestamp");
+const refinePanel   = $("refine-panel");
+const refineEl      = $("refine-text");
+const refineLoading = $("refine-loading");
+const commitPanel   = $("commit-panel");
+const commitLoading = $("commit-loading");
+const prevPrivate   = $("preview-private");
+const prevPublic    = $("preview-public");
+const memoryInner   = $("memory-inner");
+const toast         = $("toast");
+
+// ── Toast ────────────────────────────────────────────────────
+let toastT;
+function showToast(msg, err = false) {
+  clearTimeout(toastT);
+  toast.textContent = msg;
+  toast.className   = "show" + (err ? " error" : "");
+  toastT = setTimeout(() => toast.className = "", 3000);
+}
+
+// ── Timestamp ────────────────────────────────────────────────
+setInterval(() => {
+  timestamp.textContent = new Date().toLocaleString("pt-BR", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+    hour:"2-digit", minute:"2-digit", second:"2-digit"
+  });
+}, 1000);
+
+// ── Auth ─────────────────────────────────────────────────────
+onAuth(user => {
+  if (user && user.email === ALLOWED_EMAIL) {
+    loginScreen.style.display = "none";
+    app.style.display         = "flex";
+    userEmail.textContent     = user.email;
+  } else if (user) {
+    logout();
+  } else {
+    loginScreen.style.display = "flex";
+    app.style.display         = "none";
+  }
+});
+$("btn-login").addEventListener("click", async () => {
+  loginError.style.display = "none";
+  try { await login(); }
+  catch (e) { loginError.style.display = "block"; loginError.textContent = e.message; }
+});
+$("btn-logout").addEventListener("click", logout);
+
+// ── Tabs ─────────────────────────────────────────────────────
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "memory") loadMemory();
+  });
+});
+
+// ── Format bar ───────────────────────────────────────────────
+document.querySelectorAll(".fmt-btn").forEach(btn => {
+  btn.addEventListener("mousedown", e => {
+    e.preventDefault();
+    const cmd = btn.dataset.cmd;
+    if (cmd === "h2") {
+      document.execCommand("formatBlock", false, "h2");
+    } else {
+      document.execCommand(cmd, false, null);
+    }
+    editor.focus();
+  });
+});
+
+// Helpers para obter/setar conteúdo do editor
+function getEditorText() {
+  return editor.innerText.trim();
+}
+function getEditorHTML() {
+  return editor.innerHTML.trim();
+}
+function setEditorHTML(html) {
+  editor.innerHTML = html;
+}
+
+// ── IA Refine ────────────────────────────────────────────────
+async function runRefine() {
+  const raw = getEditorText();
+  if (!raw) { showToast("editor vazio", true); return; }
+  refinePanel.classList.add("visible");
+  refineEl.textContent       = "";
+  refineLoading.style.display = "inline";
+  $("btn-refine-regen").disabled = $("btn-refine-accept").disabled = true;
+  try {
+    refineEl.textContent = await refineText(raw);
+  } catch (e) {
+    showToast("IA falhou: " + e.message, true);
+    refinePanel.classList.remove("visible");
+  } finally {
+    refineLoading.style.display = "none";
+    $("btn-refine-regen").disabled = $("btn-refine-accept").disabled = false;
+  }
+}
+$("btn-ai").addEventListener("click", runRefine);
+$("btn-refine-regen").addEventListener("click", runRefine);
+$("btn-refine-cancel").addEventListener("click", () => refinePanel.classList.remove("visible"));
+$("btn-refine-accept").addEventListener("click", () => {
+  setEditorHTML(refineEl.textContent);
+  refinePanel.classList.remove("visible");
+  showToast("texto aceito");
+});
+
+// ── Commit → Preview ─────────────────────────────────────────
+$("btn-commit").addEventListener("click", async () => {
+  const body = getEditorText();
+  if (!body) { showToast("editor vazio", true); return; }
+  commitPanel.classList.add("visible");
+  prevPrivate.textContent    = body;
+  prevPublic.textContent     = "";
+  $("btn-preview-publish").disabled = true;
+  await generatePublic(body);
+});
+
+async function generatePublic(body) {
+  commitLoading.style.display       = "inline";
+  $("btn-preview-regen").disabled   = true;
+  $("btn-preview-publish").disabled = true;
+  prevPublic.textContent            = "";
+  try {
+    const pub = await filterText(body);
+    prevPublic.textContent            = pub;
+    $("btn-preview-publish").disabled = false;
+  } catch (e) {
+    showToast("IA falhou: " + e.message, true);
+    prevPublic.textContent = "// erro ao gerar versão pública";
+  } finally {
+    commitLoading.style.display     = "none";
+    $("btn-preview-regen").disabled = false;
+  }
+}
+
+$("btn-preview-cancel").addEventListener("click", () => commitPanel.classList.remove("visible"));
+$("btn-preview-regen").addEventListener("click", () => generatePublic(prevPrivate.textContent));
+
+$("btn-preview-publish").addEventListener("click", async () => {
+  const body       = prevPrivate.textContent;
+  const bodyPublic = prevPublic.textContent;
+  const tags = tagsInput.value.split(",").map(t => t.trim().toLowerCase()).filter(Boolean);
+  const btn  = $("btn-preview-publish");
+  btn.disabled = true;
+  btn.textContent = "salvando...";
+  try {
+    await savePost({ body, bodyPublic, tags });
+    editor.innerHTML = "";
+    tagsInput.value  = "";
+    commitPanel.classList.remove("visible");
+    showToast("log publicado");
+  } catch (e) {
+    showToast("erro ao salvar: " + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "publicar →";
+  }
+});
+
+// ── Memory ───────────────────────────────────────────────────
+async function loadMemory() {
+  memoryInner.innerHTML = `<p class="loading-text">carregando...</p>`;
+  try {
+    const posts = await fetchPosts();
+    if (!posts.length) {
+      memoryInner.innerHTML = `<p style="font-family:var(--mono);font-size:0.8rem;color:var(--text3);">// nenhum log ainda</p>`;
+      return;
+    }
+    memoryInner.innerHTML = posts.map(p => {
+      const date = p.createdAt?.toDate
+        ? p.createdAt.toDate().toLocaleString("pt-BR") : "—";
+      const tags = p.tags?.length ? p.tags.map(t => `#${t}`).join("  ") : "";
+      return `
+        <div class="post-card">
+          <div class="post-card-top">
+            <div class="post-toggle">
+              <button class="post-view-btn active" data-id="${p.id}" data-view="private">privado</button>
+              <button class="post-view-btn"        data-id="${p.id}" data-view="public">público</button>
+            </div>
+            <span class="post-meta">${date}</span>
+            <button class="post-del-btn" data-id="${p.id}">deletar</button>
+          </div>
+          <div class="post-body-wrap">
+            <div class="post-body"          id="pb-priv-${p.id}">${escapeHtml(p.body)}</div>
+            <div class="post-body is-public" id="pb-pub-${p.id}"  style="display:none;">${escapeHtml(p.bodyPublic || "// sem versão pública")}</div>
+            ${tags ? `<div class="post-tags">${tags}</div>` : ""}
+          </div>
+        </div>`;
+    }).join("");
+
+    memoryInner.querySelectorAll(".post-view-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id   = btn.dataset.id;
+        const view = btn.dataset.view;
+        memoryInner.querySelectorAll(`[data-id="${id}"].post-view-btn`).forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        $(`pb-priv-${id}`).style.display = view === "private" ? "block" : "none";
+        $(`pb-pub-${id}`).style.display  = view === "public"  ? "block" : "none";
+      });
+    });
+
+    memoryInner.querySelectorAll(".post-del-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Deletar este log?")) return;
+        await deletePost(btn.dataset.id);
+        showToast("log deletado");
+        loadMemory();
+      });
+    });
+
+  } catch (e) {
+    memoryInner.innerHTML = `<p style="font-family:var(--mono);font-size:0.75rem;color:var(--red);">// erro: ${e.message}</p>`;
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>
+</body>
+</html>

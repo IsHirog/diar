@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0d0d0d;
+      --surface: #141414;
+      --border:  #1f1f1f;
+      --red:     #e84040;
+      --green:   #3ddc84;
+      --text:    #d8d8d8;
+      --text2:   #888888;
+      --text3:   #444444;
+      --mono:    'IBM Plex Mono', monospace;
+      --serif:   'IBM Plex Serif', serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--serif);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      color: var(--text2);
+    }
+    .logo span { color: var(--red); }
+    .header-meta {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text3);
+      letter-spacing: 0.2em;
+    }
+
+    /* ── Feed ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    /* ── Post ── */
+    .post {
+      margin-bottom: 3.5rem;
+      padding-bottom: 3.5rem;
+      border-bottom: 1px solid var(--border);
+      animation: up 0.35s ease both;
+    }
+    .post:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .post-num {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text3);
+      letter-spacing: 0.1em;
+    }
+    .post-date {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text3);
+      letter-spacing: 0.1em;
+    }
+
+    .post-body {
+      font-family: var(--serif);
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .post-tags {
+      margin-top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+    }
+    .post-tags span {
+      color: var(--green);
+      margin-right: 0.75rem;
+    }
+
+    /* ── States ── */
+    .state {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--text3);
+      padding: 3rem 0;
+    }
+    .state.loading { animation: blink 1.2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text3);
+      letter-spacing: 0.12em;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">DIAR <span>//</span> FEED</span>
+  <span class="header-meta">TRANSMISSÕES PÚBLICAS</span>
+</header>
+
+<main>
+  <div id="feed">
+    <p class="state loading">estabelecendo conexão...</p>
+  </div>
+</main>
+
+<footer>
+  <span id="post-count"></span>
+  <span id="last-sync"></span>
+</footer>
+
+<script type="module">
+import { fetchPosts } from "./assets/js/firebase.js";
+
+const feed      = document.getElementById("feed");
+const postCount = document.getElementById("post-count");
+const lastSync  = document.getElementById("last-sync");
+
+function esc(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+async function render() {
+  try {
+    const posts = await fetchPosts();
+    if (!posts.length) {
+      feed.innerHTML = `<p class="state">// nenhuma transmissão ainda</p>`;
+      return;
+    }
+    feed.innerHTML = posts.map((p, i) => {
+      const date = p.createdAt?.toDate
+        ? p.createdAt.toDate().toLocaleString("pt-BR", {
+            day:"2-digit", month:"2-digit", year:"numeric",
+            hour:"2-digit", minute:"2-digit"
+          })
+        : "—";
+      const body = esc(p.bodyPublic || p.body || "");
+      const num  = String(posts.length - i).padStart(3, "0");
+      const tags = p.tags?.length
+        ? `<div class="post-tags">${p.tags.map(t => `<span>#${t}</span>`).join("")}</div>`
+        : "";
+      return `
+        <article class="post" style="animation-delay:${i * 0.04}s">
+          <div class="post-header">
+            <span class="post-num">${num}</span>
+            <span class="post-date">${date}</span>
+          </div>
+          <div class="post-body">${body}</div>
+          ${tags}
+        </article>`;
+    }).join("");
+
+    postCount.textContent = `${posts.length} entradas`;
+    lastSync.textContent  = `sync: ${new Date().toLocaleTimeString("pt-BR")}`;
+
+  } catch (e) {
+    feed.innerHTML = `<p class="state">// erro de conexão: ${e.message}</p>`;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
